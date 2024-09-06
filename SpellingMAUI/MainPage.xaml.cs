@@ -12,7 +12,7 @@ public partial class MainPage : ContentPage
     List<string> incorrectWords = new List<string>();
     readonly Random random = new Random();
     private readonly SpellingsDatabase database;
-
+    private readonly Spellcheker spellcheker;
     CancellationTokenSource cts;
     private Spelling spelling;
     private string practiceLabel;
@@ -36,21 +36,25 @@ public partial class MainPage : ContentPage
         {
             spelling = value;
             if (spelling != null)
-                PracticeLabel = $"Practice: {spelling.Name}";
+            {
+                LoadSpellings();
+                PracticeLabel = $"Practice: {spelling.Name} Total Words: {WordsCount}";
+            }
         }
     }
 
-    public MainPage(SpellingsDatabase spellingDatabase)
+    public MainPage(SpellingsDatabase spellingDatabase, Spellcheker spellcheker)
     {
         InitializeComponent();
 
         database = spellingDatabase;
+        this.spellcheker = spellcheker;
         BindingContext = this;
     }
 
     private void LoadSpellings()
     {
-        Words = Spelling != null ? Spelling.Words?.Split(',').Select(x => x.Trim()).ToList() : new();
+        Words = Spelling != null ? Spelling.Words?.Split(',').Select(x => x.Trim()).Distinct().ToList() : new();
         WordsCount = Words.Count;
     }
 
@@ -58,24 +62,21 @@ public partial class MainPage : ContentPage
     {
         string text = ((Entry)sender).Text;
 
-        if (string.IsNullOrEmpty(text))
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(currentWord))
         {
             return;
         }
 
-        if (!string.IsNullOrEmpty(currentWord))
+        if (spellcheker.Spell(currentWord) == spellcheker.Spell(text))
         {
-            if (currentWord.ToLower() == text.ToLower())
-            {
-                correct++;
-                AnswerLbl.TextColor = Color.Parse("Green");
-            }
-            else
-            {
-                incorrect++;
-                AnswerLbl.TextColor = Color.Parse("Red");
-                incorrectWords.Add(currentWord);
-            }
+            correct++;
+            AnswerLbl.TextColor = Color.Parse("Green");
+        }
+        else
+        {
+            incorrect++;
+            AnswerLbl.TextColor = Color.Parse("Red");
+            incorrectWords.Add(currentWord);
         }
 
         AnswerLbl.Text = currentWord;
@@ -92,7 +93,6 @@ public partial class MainPage : ContentPage
 
     private async void SpeakBtn_Clicked(object sender, EventArgs e)
     {
-        LoadSpellings();
         currentWord = GetRandomWord();
         if (currentWord is null)
             return;
