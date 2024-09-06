@@ -21,6 +21,7 @@ namespace SpellingMAUI
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<ResultsPage>();
             builder.Services.AddSingleton<SpellingsDatabase>();
+            builder.Services.AddSingleton<Spellcheker>();
 
 #if DEBUG
             builder.Logging.AddDebug();
