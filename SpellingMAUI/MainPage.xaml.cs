@@ -79,7 +79,7 @@ public partial class MainPage : ContentPage
             incorrectWords.Add(currentWord);
         }
 
-        AnswerLbl.Text = currentWord;
+        AnswerLbl.Text = $"Dictated word: {currentWord} | Entered word: {text}";
         ResultLbl.Text = $"Correct: {correct} | Incorrect: {incorrect}  |   Progress: {correct + incorrect}/{WordsCount}";
 
         TxtSpell.Text = "";
